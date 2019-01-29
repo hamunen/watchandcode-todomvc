@@ -41,8 +41,10 @@ jQuery(function ($) {
 	var App = {
 		init: function () {
 			this.todos = util.store('todos-jquery');
-			this.todoTemplate = Handlebars.compile($('#todo-template').html());
-			this.footerTemplate = Handlebars.compile($('#footer-template').html());
+			//this.todoTemplate = Handlebars.compile($('#todo-template').html());
+			this.todoTemplate = Handlebars.compile(document.getElementById('todo-template').innerHTML);
+			//this.footerTemplate = Handlebars.compile($('#footer-template').html());
+			this.footerTemplate = Handlebars.compile(document.getElementById('footer-template').innerHTML);
 			this.bindEvents();
 
 			new Router({
@@ -53,15 +55,55 @@ jQuery(function ($) {
 			}).init('/all');
 		},
 		bindEvents: function () {
-			$('#new-todo').on('keyup', this.create.bind(this));
-			$('#toggle-all').on('change', this.toggleAll.bind(this));
-			$('#footer').on('click', '#clear-completed', this.destroyCompleted.bind(this));
-			$('#todo-list')
-				.on('change', '.toggle', this.toggle.bind(this))
-				.on('dblclick', 'label', this.edit.bind(this))
-				.on('keyup', '.edit', this.editKeyup.bind(this))
-				.on('focusout', '.edit', this.update.bind(this))
-				.on('click', '.destroy', this.destroy.bind(this));
+			//$('#new-todo').on('keyup', this.create.bind(this));
+			document.getElementById('new-todo').addEventListener('keyup', this.create.bind(this));
+			//$('#toggle-all').on('change', this.toggleAll.bind(this));
+			document.getElementById('toggle-all').addEventListener('change', this.toggleAll.bind(this));
+			//$('#footer').on('click', '#clear-completed', this.destroyCompleted.bind(this));
+			document.getElementById('footer').addEventListener('click', function(e) {
+				if (e.target.id === 'clear-completed') {
+					this.destroyCompleted();
+				}
+			}.bind(this));
+
+			//	$('#todo-list')
+				//.on('change', '.toggle', this.toggle.bind(this))
+				//.on('dblclick', 'label', this.edit.bind(this))
+				//.on('keyup', '.edit', this.editKeyup.bind(this))
+				//.on('focusout', '.edit', this.update.bind(this))
+				//.on('click', '.destroy', this.destroy.bind(this));
+			
+			document.getElementById('todo-list').addEventListener('change', function(e) {
+				if (e.target.className === 'toggle') {
+					this.toggle(e);
+				}
+			}.bind(this));
+
+			document.getElementById('todo-list').addEventListener('dblclick', function(e) {
+				if (e.target.id === 'label') {
+					this.edit(e);
+				}
+			}.bind(this));
+
+			document.getElementById('todo-list').addEventListener('keyup', function(e) {
+				if (e.target.className === 'edit') {
+					this.editKeyup(e);
+				}
+			}.bind(this));
+
+			document.getElementById('todo-list').addEventListener('focusout', function(e) {
+				if (e.target.className === 'edit') {
+					this.update(e);
+				}
+			}.bind(this));
+
+			document.getElementById('todo-list').addEventListener('click', function(e) {
+				if (e.target.className === 'destroy') {
+					this.destroy(e);
+				}
+			}.bind(this));
+
+
 		},
 		render: function () {
 			var todos = this.getFilteredTodos();
