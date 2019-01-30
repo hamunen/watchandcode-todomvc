@@ -1,5 +1,5 @@
 /*global jQuery, Handlebars, Router */
-jQuery(function ($) {
+//jQuery(function ($) {
 	'use strict';
 
 	Handlebars.registerHelper('eq', function (a, b, options) {
@@ -80,7 +80,7 @@ jQuery(function ($) {
 			}.bind(this));
 
 			document.getElementById('todo-list').addEventListener('dblclick', function(e) {
-				if (e.target.id === 'label') {
+				if (e.target.localName === 'label') {
 					this.edit(e);
 				}
 			}.bind(this));
@@ -107,11 +107,15 @@ jQuery(function ($) {
 		},
 		render: function () {
 			var todos = this.getFilteredTodos();
-			$('#todo-list').html(this.todoTemplate(todos));
-			$('#main').toggle(todos.length > 0);
-			$('#toggle-all').prop('checked', this.getActiveTodos().length === 0);
+			//$('#todo-list').html(this.todoTemplate(todos));
+			document.getElementById('todo-list').innerHTML = this.todoTemplate(todos);
+			//$('#main').toggle(todos.length > 0);
+			document.getElementById('main').style.display = todos.length > 0 ? 'block' : 'none';
+			//$('#toggle-all').prop('checked', this.getActiveTodos().length === 0);
+			document.getElementById('toggle-all').checked = this.getActiveTodos().length === 0;
 			this.renderFooter();
-			$('#new-todo').focus();
+			//$('#new-todo').focus();
+			document.getElementById('new-todo').focus();
 			util.store('todos-jquery', this.todos);
 		},
 		renderFooter: function () {
@@ -124,10 +128,18 @@ jQuery(function ($) {
 				filter: this.filter
 			});
 
-			$('#footer').toggle(todoCount > 0).html(template);
+			//$('#footer').toggle(todoCount > 0).html(template);
+			var footer = document.getElementById('footer');
+			if (todoCount > 0) {
+				footer.style.display = 'block';
+				footer.innerHTML = template;
+			} else {
+				footer.style.display = 'none';
+			}
 		},
 		toggleAll: function (e) {
-			var isChecked = $(e.target).prop('checked');
+			//var isChecked = $(e.target).prop('checked');
+			var isChecked = e.target.checked;
 
 			this.todos.forEach(function (todo) {
 				todo.completed = isChecked;
@@ -164,7 +176,8 @@ jQuery(function ($) {
 		// accepts an element from inside the `.item` div and
 		// returns the corresponding index in the `todos` array
 		indexFromEl: function (el) {
-			var id = $(el).closest('li').data('id');
+			//var id = $(el).closest('li').data('id');
+			var id = el.closest('li').dataset.id;
 			var todos = this.todos;
 			var i = todos.length;
 
@@ -175,8 +188,10 @@ jQuery(function ($) {
 			}
 		},
 		create: function (e) {
-			var $input = $(e.target);
-			var val = $input.val().trim();
+			//var $input = $(e.target);
+			var input = e.target;
+			//var val = $input.val().trim();
+			var val = input.value.trim();
 
 			if (e.which !== ENTER_KEY || !val) {
 				return;
@@ -188,7 +203,7 @@ jQuery(function ($) {
 				completed: false
 			});
 
-			$input.val('');
+			input.value = '';
 
 			this.render();
 		},
@@ -198,8 +213,16 @@ jQuery(function ($) {
 			this.render();
 		},
 		edit: function (e) {
-			var $input = $(e.target).closest('li').addClass('editing').find('.edit');
-			$input.val($input.val()).focus();
+			//var $input = $(e.target).closest('li').addClass('editing').find('.edit');
+			var el = e.target.closest('li');
+			el.classList.add('editing');
+			var input = el.querySelector('.edit');
+			input.focus();
+			// I think the point in passing input.val() to the value is to get the cursor to the right
+			var temp = input.value;
+			input.value = '';
+			input.value = temp;
+			//$input.val($input.val()).focus();
 		},
 		editKeyup: function (e) {
 			if (e.which === ENTER_KEY) {
@@ -207,21 +230,26 @@ jQuery(function ($) {
 			}
 
 			if (e.which === ESCAPE_KEY) {
-				$(e.target).data('abort', true).blur();
+				//$(e.target).data('abort', true).blur();
+				e.target.dataset.abort = true;
+				e.target.blur();
 			}
 		},
 		update: function (e) {
 			var el = e.target;
-			var $el = $(el);
-			var val = $el.val().trim();
+			//var $el = $(el);
+			//var val = $el.val().trim();
+			var val = el.value.trim();
 
 			if (!val) {
 				this.destroy(e);
 				return;
 			}
 
-			if ($el.data('abort')) {
-				$el.data('abort', false);
+			//if ($el.data('abort')) {
+			if (el.dataset.abort) {
+				//$el.data('abort', false);
+				el.dataset.abort = false;
 			} else {
 				this.todos[this.indexFromEl(el)].title = val;
 			}
@@ -235,4 +263,4 @@ jQuery(function ($) {
 	};
 
 	App.init();
-});
+//});
